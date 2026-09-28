@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Payroll Management System | Naming Convention Showcase</title>
+  
+  <!-- Modern Typography (Inter & Outfit) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons for clean professional visual indicators -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Core Application Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-body">
+  
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW: LOGIN AUTHENTICATION SCREEN -->
+  <!-- ========================================================================= -->
+  <div id="login-view" class="login-view-wrapper">
+    <div class="login-container">
+      <div class="login-card">
+        
+        <!-- Login Header with Branding -->
+        <div class="login-header">
+          <div class="login-brand-icon">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <h2 class="login-title">Payroll System Portal</h2>
+          <p class="login-subtitle">B.Tech Academic Portal</p>
+          <div class="login-badge-pill">
+            <i class="fa-solid fa-shield-halved"></i> Secure Access Required
+          </div>
+        </div>
+
+        <!-- Auth Mode Switcher (Sign In vs Register) -->
+        <div class="auth-mode-bar" role="tablist">
+          <button type="button" id="auth-tab-signin" class="auth-tab-btn active" role="tab" aria-selected="true">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </button>
+          <button type="button" id="auth-tab-register" class="auth-tab-btn" role="tab" aria-selected="false">
+            <i class="fa-solid fa-user-plus"></i> Register
+          </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 1. SIGN IN SECTION                         -->
+        <!-- ========================================== -->
+        <div id="auth-signin-section" class="auth-section">
+          
+          <!-- Login Alert Banner -->
+          <div id="login-error-alert" class="login-alert hidden" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="login-error-text">Invalid username or password.</span>
+          </div>
+
+          <!-- Sign In Form -->
+          <form id="login-form" class="login-form" novalidate>
+            <div class="form-group">
+              <label for="login-username" class="form-label">
+                Username <span class="required-star">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input 
+                  type="text" 
+                  id="login-username" 
+                  class="form-control" 
+                  placeholder="Enter username (e.g. Ganika or registered username)" 
+                  required 
+                  autocomplete="username"
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="login-password" class="form-label">
+                Password <span class="required-star">*</span>
+              </label>
+              <div class="input-with-icon input-password-wrap">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input 
+                  type="password" 
+                  id="login-password" 
+                  class="form-control" 
+                  placeholder="Enter your password" 
+                  required 
+                  autocomplete="current-password"
+                >
+                <button 
+                  type="button" 
+                  id="toggle-password-btn" 
+                  class="toggle-password-btn" 
+                  aria-label="Toggle password visibility"
+                  title="Show/Hide Password"
+                >
+                  <i id="password-toggle-icon" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="login-options-row">
+              <label class="remember-label">
+                <input type="checkbox" id="remember-login-chk" checked>
+                <span>Keep me signed in</span>
+              </label>
+            </div>
+
+            <button id="login-submit-btn" class="btn btn-primary btn-block btn-lg" type="submit">
+              <i class="fa-solid fa-right-to-bracket"></i> Sign In to Dashboard
+            </button>
+          </form>
+
+          <div class="auth-switch-prompt">
+            <span>New user?</span>
+            <button type="button" id="switch-to-register-btn" class="link-btn">Create an account</button>
+          </div>
+
+          <!-- Convenient Demo Credentials Card for Presentation -->
+          <div class="demo-credentials-card" id="demo-credentials-card">
+            <div class="demo-credentials-header">
+              <i class="fa-solid fa-key"></i>
+              <span>Login Credentials</span>
+            </div>
+            <p class="demo-credentials-text">
+              Admin: <strong>Ganika</strong> &bull; Password: <strong>Ganika@123</strong><br>
+              <span class="text-muted" style="font-size: 0.76rem;">(You can also sign in with any username created in the Register tab)</span>
+            </p>
+            <button id="fill-demo-credentials-btn" class="btn-demo-fill" type="button">
+              <i class="fa-solid fa-bolt"></i> Auto-fill Admin (Ganika)
+            </button>
+          </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 2. REGISTER NEW USER SECTION               -->
+        <!-- ========================================== -->
+        <div id="auth-register-section" class="auth-section hidden">
+          
+          <!-- Register Error Banner -->
+          <div id="register-error-alert" class="login-alert hidden" role="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span id="register-error-text">Please complete all required fields.</span>
+          </div>
+
+          <!-- Register Form -->
+          <form id="register-form" class="login-form" novalidate>
+            <!-- 1. Username (Required for Login) -->
+            <div class="form-group">
+              <label for="register-username" class="form-label">
+                Username <span class="required-star">*</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-user-plus input-icon"></i>
+                <input 
+                  type="text" 
+                  id="register-username" 
+                  class="form-control" 
+                  placeholder="Choose your login username (e.g. rahul)" 
+                  required
+                  autocomplete="username"
+                >
+              </div>
+              <span class="field-hint">
+                <i class="fa-solid fa-circle-info"></i> You will use this username to sign in
+              </span>
+            </div>
+
+            <!-- 2. Full Name (Display Name) -->
+            <div class="form-group">
+              <label for="register-fullname" class="form-label">
+                Full Name <span style="font-size: 0.75rem; color: var(--neutral-400);">(Optional)</span>
+              </label>
+              <div class="input-with-icon">
+                <i class="fa-solid fa-id-card input-icon"></i>
+                <input 
+                  type="text" 
+                  id="register-fullname" 
+                  class="form-control" 
+                  placeholder="e.g. Rahul Sharma" 
+                  autocomplete="name"
+                >
+              </div>
+              <span class="field-hint">
+                <i class="fa-solid fa-spell-check"></i> Automatically capitalizes first letter
+              </span>
+            </div>
+
+            <!-- 3. Staff Role -->
+            <div class="form-group">
+              <label for="register-role" class="form-label">
+                Staff Role / Position <span class="required-star">*</span>
+              </label>
+              <select id="register-role" class="form-control form-select" required>
+                <option value="Payroll Officer" selected>Payroll Officer</option>
+                <option value="HR Manager">HR Manager</option>
+                <option value="Finance Analyst">Finance Analyst</option>
+                <option value="System Administrator">System Administrator</option>
+              </select>
+            </div>
+
+            <!-- 4. Password -->
+            <div class="form-group">
+              <label for="register-password" class="form-label">
+                Password <span class="required-star">*</span>
+              </label>
+              <div class="input-with-icon input-password-wrap">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input 
+                  type="password" 
+                  id="register-password" 
+                  class="form-control" 
+                  placeholder="Create a password (min 3 characters)" 
+                  required
+                >
+                <button 
+                  type="button" 
+                  id="toggle-register-password-btn" 
+                  class="toggle-password-btn" 
+                  aria-label="Toggle password visibility"
+                  title="Show/Hide Password"
+                >
+                  <i id="register-password-icon" class="fa-solid fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 5. Confirm Password -->
+            <div class="form-group">
+              <label for="register-confirm-password" class="form-label">
+                Confirm Password <span class="required-star">*</span>
+              </label>
+              <div class="input-with-icon input-password-wrap">
+                <i class="fa-solid fa-shield-check input-icon"></i>
+                <input 
+                  type="password" 
+                  id="register-confirm-password" 
+                  class="form-control" 
+                  placeholder="Re-enter your password" 
+                  required
+                >
+              </div>
+            </div>
+
+            <button id="register-submit-btn" class="btn btn-primary btn-block btn-lg" type="submit">
+              <i class="fa-solid fa-user-check"></i> Register & Enable Sign In
+            </button>
+          </form>
+
+          <div class="auth-switch-prompt">
+            <span>Already have an account?</span>
+            <button type="button" id="switch-to-signin-btn" class="link-btn">Sign in with your username</button>
+          </div>
+        </div>
+
+        <div class="login-footer-meta">
+          <span>Employee Payroll Management System &bull; B.Tech CSE</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Header (Visible after authentication) -->
+  <header id="main-app-header" class="app-header hidden">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">Employee Payroll</h1>
+          <p class="brand-subtitle">B.Tech Academic Project</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button id="add-employee-header-btn" class="btn btn-primary" type="button">
+          <i class="fa-solid fa-user-plus"></i> Add Employee
+        </button>
+
+        <!-- User Profile Pill & Logout Button -->
+        <div class="user-profile-widget">
+          <div class="user-avatar-circle" title="Logged in as Administrator">
+            <i class="fa-solid fa-user-shield"></i>
+          </div>
+          <div class="user-info-text">
+            <span id="current-user-display" class="user-name-text">Ganika</span>
+            <span class="user-role-text">Payroll Officer</span>
+          </div>
+          <button id="logout-btn" class="btn-logout" type="button" title="Sign Out of Portal">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- VIEW 1: PAYROLL DASHBOARD VIEW -->
+    <section id="dashboard-view" class="view-section active">
+      
+      <!-- Statistics Metric Cards -->
+      <section class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-blue">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Employees</span>
+            <h3 id="stat-total-employees" class="stat-value">0</h3>
+            <span class="stat-subtext">Active on payroll</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-purple">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Monthly Payroll</span>
+            <h3 id="stat-total-net-payout" class="stat-value">₹0.00</h3>
+            <span class="stat-subtext">Net disbursement</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-green">
+            <i class="fa-solid fa-coins"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Average Net Salary</span>
+            <h3 id="stat-avg-net-salary" class="stat-value">₹0.00</h3>
+            <span class="stat-subtext">Per employee average</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon stat-icon-amber">
+            <i class="fa-solid fa-business-time"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">Total Overtime Hours</span>
+            <h3 id="stat-total-overtime-hours" class="stat-value">0 hrs</h3>
+            <span class="stat-subtext">Current pay cycle</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Action & Filter Bar -->
+      <section class="controls-card">
+        <div class="search-filter-group">
+          <!-- Real-time Search Box -->
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              class="form-control search-input" 
+              placeholder="Search by Employee ID or Name (e.g. EMP-1001 or Priya)..."
+              autocomplete="off"
+            >
+            <button id="clear-search-btn" class="clear-search-btn hidden" type="button" title="Clear Search">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Department Filter Dropdown -->
+          <div class="filter-dropdown-wrapper">
+            <label for="department-filter" class="visually-hidden">Filter by Department</label>
+            <select id="department-filter" class="form-control form-select">
+              <option value="ALL">All Departments</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Finance">Finance</option>
+              <option value="Operations">Operations</option>
+              <option value="Quality Assurance">Quality Assurance</option>
+            </select>
+          </div>
+
+          <!-- Sort Order Dropdown -->
+          <div class="sort-dropdown-wrapper">
+            <label for="sort-selector" class="visually-hidden">Sort Employees</label>
+            <select id="sort-selector" class="form-control form-select">
+              <option value="id-asc">Sort: ID (Ascending)</option>
+              <option value="name-asc">Sort: Name (A-Z)</option>
+              <option value="salary-desc">Sort: Net Salary (High to Low)</option>
+              <option value="salary-asc">Sort: Net Salary (Low to High)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table Management Utility Buttons -->
+        <div class="utility-buttons-group">
+          <button id="reset-sample-data-btn" class="btn btn-secondary" type="button" title="Reload default sample records">
+            <i class="fa-solid fa-rotate-left"></i> Reset Sample Data
+          </button>
+          <button id="print-summary-btn" class="btn btn-secondary" type="button" title="Print payroll summary report">
+            <i class="fa-solid fa-print"></i> Print Report
+          </button>
+        </div>
+      </section>
+
+      <!-- Employee Payroll Records Table Container -->
+      <section class="table-card">
+        <div class="table-header-bar">
+          <div class="table-title-group">
+            <h2 class="table-title">Employee Payroll Records</h2>
+            <span id="record-counter-badge" class="badge badge-neutral">Showing 0 records</span>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table id="payroll-data-table" class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Employee ID</th>
+                <th scope="col">Employee Name</th>
+                <th scope="col">Department &amp; Designation</th>
+                <th scope="col" class="text-right">Basic Salary</th>
+                <th scope="col" class="text-center">Days</th>
+                <th scope="col" class="text-center">OT Hrs</th>
+                <th scope="col" class="text-right">Gross Pay</th>
+                <th scope="col" class="text-right">Deductions</th>
+                <th scope="col" class="text-right">Net Salary</th>
+                <th scope="col" class="text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="payroll-table-body">
+              <!-- Dynamically rendered via app.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State Message -->
+        <div id="empty-state-container" class="empty-state hidden">
+          <div class="empty-state-icon">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <h3 class="empty-state-title">No Matching Records Found</h3>
+          <p class="empty-state-text">Try adjusting your search criteria or add a new employee record.</p>
+          <button id="empty-state-add-btn" class="btn btn-primary" type="button">
+            <i class="fa-solid fa-user-plus"></i> Add New Employee
+          </button>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: ADD / EDIT EMPLOYEE DIALOG WITH LIVE CALCULATION PREVIEW -->
+  <!-- ========================================================================= -->
+  <div id="employee-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-form-title">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <i id="modal-icon" class="fa-solid fa-user-plus modal-icon"></i>
+            <h2 id="modal-form-title" class="modal-title">Add New Employee</h2>
+          </div>
+          <button id="close-employee-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="employee-form" class="employee-form" novalidate>
+          <div class="modal-body">
+            
+            <!-- Hidden field for tracking edit state -->
+            <input type="hidden" id="edit-original-id" value="">
+
+            <div class="form-grid">
+              
+              <!-- Field: Employee ID -->
+              <div class="form-group">
+                <label for="input-employee-id" class="form-label">
+                  Employee ID <span class="required-star">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-id-badge input-icon"></i>
+                  <input 
+                    type="text" 
+                    id="input-employee-id" 
+                    class="form-control" 
+                    placeholder="e.g. EMP-1007" 
+                    required
+                  >
+                </div>
+                <span id="error-employee-id" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Employee Name -->
+              <div class="form-group">
+                <label for="input-employee-name" class="form-label">
+                  Employee Name <span class="required-star">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-user input-icon"></i>
+                  <input 
+                    type="text" 
+                    id="input-employee-name" 
+                    class="form-control" 
+                    placeholder="e.g. Rahul Verma" 
+                    required
+                  >
+                </div>
+                <small class="field-hint"><i class="fa-solid fa-spell-check"></i> Auto-capitalizes first letter of each word</small>
+                <span id="error-employee-name" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Department -->
+              <div class="form-group">
+                <label for="input-department" class="form-label">
+                  Department <span class="required-star">*</span>
+                </label>
+                <select id="input-department" class="form-control form-select" required>
+                  <option value="" disabled selected>Select Department</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Human Resources">Human Resources</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Operations">Operations</option>
+                  <option value="Quality Assurance">Quality Assurance</option>
+                  <option value="Marketing">Marketing</option>
+                </select>
+                <span id="error-department" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Designation -->
+              <div class="form-group">
+                <label for="input-designation" class="form-label">
+                  Designation <span class="required-star">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-briefcase input-icon"></i>
+                  <input 
+                    type="text" 
+                    id="input-designation" 
+                    class="form-control" 
+                    placeholder="e.g. Software Engineer" 
+                    required
+                  >
+                </div>
+                <span id="error-designation" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Basic Salary -->
+              <div class="form-group">
+                <label for="input-basic-salary" class="form-label">
+                  Basic Monthly Salary (₹) <span class="required-star">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-indian-rupee-sign input-icon"></i>
+                  <input 
+                    type="number" 
+                    id="input-basic-salary" 
+                    class="form-control" 
+                    placeholder="e.g. 50000" 
+                    min="1000" 
+                    step="500" 
+                    required
+                  >
+                </div>
+                <span id="error-basic-salary" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Working Days -->
+              <div class="form-group">
+                <label for="input-working-days" class="form-label">
+                  Working Days (Max: 30) <span class="required-star">*</span>
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-calendar-check input-icon"></i>
+                  <input 
+                    type="number" 
+                    id="input-working-days" 
+                    class="form-control" 
+                    placeholder="30" 
+                    min="0" 
+                    max="30" 
+                    value="30" 
+                    required
+                  >
+                </div>
+                <span id="error-working-days" class="input-error-msg hidden"></span>
+              </div>
+
+              <!-- Field: Overtime Hours -->
+              <div class="form-group form-group-full">
+                <label for="input-overtime-hours" class="form-label">
+                  Overtime Hours (OT)
+                </label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-clock input-icon"></i>
+                  <input 
+                    type="number" 
+                    id="input-overtime-hours" 
+                    class="form-control" 
+                    placeholder="0" 
+                    min="0" 
+                    max="100" 
+                    value="0"
+                  >
+                </div>
+                <span id="error-overtime-hours" class="input-error-msg hidden"></span>
+              </div>
+
+            </div>
+
+            <!-- LIVE CALCULATION PREVIEW BOX -->
+            <div class="live-preview-box">
+              <div class="live-preview-header">
+                <span class="preview-title">
+                  <i class="fa-solid fa-bolt"></i> Live Real-Time Payroll Computation
+                </span>
+                <span class="preview-badge">Auto Computed</span>
+              </div>
+              <div class="preview-grid">
+                <div class="preview-item">
+                  <span class="preview-label">Basic Pay:</span>
+                  <span id="preview-basic-pay" class="preview-value">₹0.00</span>
+                </div>
+                <div class="preview-item">
+                  <span class="preview-label">Overtime Pay:</span>
+                  <span id="preview-overtime-pay" class="preview-value">₹0.00</span>
+                </div>
+                <div class="preview-item">
+                  <span class="preview-label">Total Allowances (+):</span>
+                  <span id="preview-allowances" class="preview-value text-green">₹0.00</span>
+                </div>
+                <div class="preview-item">
+                  <span class="preview-label">Total Deductions (-):</span>
+                  <span id="preview-deductions" class="preview-value text-red">₹0.00</span>
+                </div>
+                <div class="preview-item preview-item-total">
+                  <span class="preview-label">Estimated Net Salary:</span>
+                  <span id="preview-net-salary" class="preview-value text-highlight">₹0.00</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button id="cancel-employee-modal-btn" class="btn btn-secondary" type="button">Cancel</button>
+            <button id="save-employee-btn" class="btn btn-primary" type="submit">
+              <i class="fa-solid fa-floppy-disk"></i> Save Employee Record
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DETAILED SALARY SLIP (PAYSLIP) VIEWER -->
+  <!-- ========================================================================= -->
+  <div id="payslip-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="payslip-employee-name">
+    <div class="modal-dialog modal-dialog-lg">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <i class="fa-solid fa-receipt modal-icon"></i>
+            <h2 class="modal-title">Employee Salary Payslip</h2>
+          </div>
+          <div class="modal-header-actions">
+            <button id="print-payslip-btn" class="btn btn-secondary btn-sm" type="button">
+              <i class="fa-solid fa-print"></i> Print Payslip
+            </button>
+            <button id="close-payslip-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          
+          <!-- PRINTABLE OFFICIAL SALARY SLIP -->
+          <div id="printable-payslip-sheet" class="payslip-sheet">
+            
+            <!-- Payslip Company Header -->
+            <div class="payslip-company-header">
+              <div class="payslip-logo-title">
+                <i class="fa-solid fa-building-columns"></i>
+                <div>
+                  <h3 class="company-name">ACADEMIC TECH ENTERPRISES PVT. LTD.</h3>
+                  <p class="company-address">Department of Computer Science &amp; Engineering &bull; B.Tech Final Project</p>
+                </div>
+              </div>
+              <div class="payslip-badge-wrapper">
+                <span class="payslip-cycle-badge">MONTHLY PAYSLIP</span>
+                <span id="payslip-date-text" class="payslip-date">September 2026</span>
+              </div>
+            </div>
+
+            <!-- Employee Info Bar -->
+            <div class="payslip-info-box">
+              <div class="info-row">
+                <div class="info-item">
+                  <span class="info-label">Employee ID:</span>
+                  <span id="payslip-emp-id" class="info-val font-code">EMP-1001</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Employee Name:</span>
+                  <span id="payslip-emp-name" class="info-val">Aarav Sharma</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Department:</span>
+                  <span id="payslip-emp-dept" class="info-val">Engineering</span>
+                </div>
+              </div>
+              <div class="info-row">
+                <div class="info-item">
+                  <span class="info-label">Designation:</span>
+                  <span id="payslip-emp-desig" class="info-val">Senior Software Engineer</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Working Days:</span>
+                  <span id="payslip-emp-days" class="info-val">30 Days</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Overtime Hours:</span>
+                  <span id="payslip-emp-ot" class="info-val">12 Hours</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Earnings vs Deductions Breakdown Table -->
+            <div class="payslip-tables-split">
+              
+              <!-- Left: Earnings -->
+              <div class="payslip-column">
+                <h4 class="column-title column-title-earnings">Earnings (Allowances &amp; Basic)</h4>
+                <table class="payslip-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th class="text-right">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Basic Pay (Pro-rated)</td>
+                      <td id="slip-basic-pay" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Overtime Pay (OT &times; 1.5 Rate)</td>
+                      <td id="slip-overtime-pay" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>House Rent Allowance (HRA - 20%)</td>
+                      <td id="slip-hra" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Dearness Allowance (DA - 10%)</td>
+                      <td id="slip-da" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Conveyance Allowance</td>
+                      <td id="slip-conveyance" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Medical Allowance</td>
+                      <td id="slip-medical" class="text-right font-code">₹0.00</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Total Gross Earnings (A)</th>
+                      <th id="slip-gross-earnings" class="text-right font-code">₹0.00</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <!-- Right: Deductions -->
+              <div class="payslip-column">
+                <h4 class="column-title column-title-deductions">Statutory Deductions</h4>
+                <table class="payslip-mini-table">
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th class="text-right">Amount (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Provident Fund (PF - 12%)</td>
+                      <td id="slip-pf" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Professional Tax (PT)</td>
+                      <td id="slip-pt" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td>Income Tax / TDS (5% above ₹50k)</td>
+                      <td id="slip-tds" class="text-right font-code">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Other Penalties</td>
+                      <td class="text-right font-code text-muted">₹0.00</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Unpaid Leaves</td>
+                      <td class="text-right font-code text-muted">₹0.00</td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th>Total Deductions (B)</th>
+                      <th id="slip-total-deductions" class="text-right font-code">₹0.00</th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+            </div>
+
+            <!-- Net Salary Banner -->
+            <div class="payslip-net-banner">
+              <div class="net-banner-left">
+                <span class="net-salary-caption">Net Payable Salary (Gross - Deductions)</span>
+                <span id="payslip-net-words" class="net-in-words">Amount in Words</span>
+              </div>
+              <div class="net-banner-right">
+                <span id="payslip-net-amount" class="net-salary-figure">₹0.00</span>
+              </div>
+            </div>
+
+            <!-- Official Signature Block -->
+            <div class="payslip-signatures">
+              <div class="sig-block">
+                <div class="sig-line"></div>
+                <span class="sig-label">Employee Signature</span>
+              </div>
+              <div class="sig-block">
+                <div class="sig-stamp">VERIFIED &amp; APPROVED</div>
+                <div class="sig-line"></div>
+                <span class="sig-label">Authorized Payroll Officer</span>
+              </div>
+            </div>
+
+            <!-- Note / Footer -->
+            <div class="payslip-footer-note">
+              This is a computer-generated academic project payroll document created for the <strong>Employee Payroll Naming Convention</strong> project.
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button id="close-payslip-bottom-btn" class="btn btn-secondary" type="button">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: DELETE CONFIRMATION DIALOG -->
+  <!-- ========================================================================= -->
+  <div id="delete-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <div class="modal-dialog modal-dialog-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <i class="fa-solid fa-triangle-exclamation modal-icon text-red"></i>
+            <h2 id="delete-modal-title" class="modal-title">Confirm Deletion</h2>
+          </div>
+          <button id="close-delete-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="delete-confirm-text">
+            Are you sure you want to delete employee record <strong id="delete-employee-name" class="font-bold"></strong> (<span id="delete-employee-id" class="font-code"></span>)?
+          </p>
+          <p class="delete-warning-note">This action cannot be undone and will remove the record from local storage.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="cancel-delete-btn" class="btn btn-secondary" type="button">Cancel</button>
+          <button id="confirm-delete-btn" class="btn btn-danger" type="button">
+            <i class="fa-solid fa-trash-can"></i> Yes, Delete Record
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; 2026 Employee Payroll Management System &bull; B.Tech Computer Science Project &bull; Naming Convention Architecture</p>
+      <div class="footer-badges">
+        <span class="footer-badge">camelCase (JS)</span>
+        <span class="footer-badge">PascalCase (Classes)</span>
+        <span class="footer-badge">UPPER_SNAKE_CASE (Constants)</span>
+        <span class="footer-badge">snake_case (SQL)</span>
+        <span class="footer-badge">kebab-case (HTML/CSS)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Controller Entry Script (ES6 Module) -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
