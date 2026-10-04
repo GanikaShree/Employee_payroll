@@ -14,7 +14,9 @@ import {
   LOCAL_STORAGE_KEY, 
   REGISTERED_USERS_STORAGE_KEY, 
   DEFAULT_ADMIN_USERNAME, 
-  DEFAULT_ADMIN_PASSWORD 
+  DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_VIEWER_USERNAME,
+  DEFAULT_VIEWER_PASSWORD
 } from './constants.js';
 import { Employee } from './models.js';
 import { initialEmployeeRecords } from './sampleData.js';
@@ -22,13 +24,101 @@ import { initialEmployeeRecords } from './sampleData.js';
 export class StorageManager {
   /**
    * Initializes local storage with sample records and default registered admin if empty.
+   * Also purges legacy login history and previous sessions.
    */
   static initializeStorage() {
+    this.purgeLegacyLoginHistory();
+
     const existingData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (!existingData) {
       this.resetToSampleData();
     }
     this.initializeRegisteredUsers();
+  }
+
+  /**
+   * Permanently clears all previous login history, saved sessions, and old user records.
+   */
+  static purgeLegacyLoginHistory() {
+    const legacySessionKeys = [
+      'employee_payroll_auth_session_v1',
+      'employee_payroll_auth_session_v2',
+      'employee_payroll_registered_users_v1',
+      'employee_payroll_registered_users_v2',
+      'current_user',
+      'logged_in_user',
+      'auth_session'
+    ];
+
+    legacySessionKeys.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      } catch (err) {
+        // ignore
+      }
+    });
+
+    // Run one-time session purge for v3 so existing browser sessions are reset cleanly
+    const migrationPurgeFlag = 'employee_payroll_history_purged_v3';
+    if (!localStorage.getItem(migrationPurgeFlag)) {
+      try {
+        localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        localStorage.setItem(migrationPurgeFlag, 'true');
+      } catch (err) {
+        // ignore
+      }
+    }
+  }
+
+  /**
+   * Explicitly clears all stored login history, active sessions, and resets user accounts.
+   * 
+   * @returns {{ success: boolean, message: string }}
+   */
+  static clearAllLoginHistory() {
+    try {
+      localStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      sessionStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+      localStorage.removeItem('employee_payroll_auth_session_v1');
+      localStorage.removeItem('employee_payroll_auth_session_v2');
+      sessionStorage.removeItem('employee_payroll_auth_session_v1');
+      sessionStorage.removeItem('employee_payroll_auth_session_v2');
+
+      const defaultCleanUsers = [
+        {
+          username: DEFAULT_ADMIN_USERNAME,
+          password: DEFAULT_ADMIN_PASSWORD,
+          fullName: 'System Administrator',
+          role: 'Administrator (Full Access)',
+          isAdmin: true,
+          email: 'admin@payroll.edu',
+          registeredAt: new Date().toISOString()
+        },
+        {
+          username: DEFAULT_VIEWER_USERNAME,
+          password: DEFAULT_VIEWER_PASSWORD,
+          fullName: 'Demo Staff Viewer',
+          role: 'Staff Member (Read-Only)',
+          isAdmin: false,
+          email: 'viewer@payroll.edu',
+          registeredAt: new Date().toISOString()
+        }
+      ];
+
+      localStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(defaultCleanUsers));
+      return {
+        success: true,
+        message: 'All login history and saved sessions have been cleared successfully.'
+      };
+    } catch (error) {
+      console.error('Failed to clear login history:', error);
+      return {
+        success: false,
+        message: 'Failed to clear login history.'
+      };
+    }
   }
 
   /**
@@ -205,7 +295,7 @@ export class StorageManager {
   }
 
   /**
-   * Initializes registered users storage with default administrator.
+   * Initializes registered users storage with default administrator and demo viewer.
    */
   static initializeRegisteredUsers() {
     const existingUsers = localStorage.getItem(REGISTERED_USERS_STORAGE_KEY);
@@ -214,9 +304,19 @@ export class StorageManager {
         {
           username: DEFAULT_ADMIN_USERNAME,
           password: DEFAULT_ADMIN_PASSWORD,
-          fullName: 'Ganika',
-          role: 'Payroll Officer',
-          email: 'ganika@payroll.edu',
+          fullName: 'System Administrator',
+          role: 'Administrator (Full Access)',
+          isAdmin: true,
+          email: 'admin@payroll.edu',
+          registeredAt: new Date().toISOString()
+        },
+        {
+          username: DEFAULT_VIEWER_USERNAME,
+          password: DEFAULT_VIEWER_PASSWORD,
+          fullName: 'Demo Staff Viewer',
+          role: 'Staff Member (Read-Only)',
+          isAdmin: false,
+          email: 'viewer@payroll.edu',
           registeredAt: new Date().toISOString()
         }
       ];
@@ -236,22 +336,56 @@ export class StorageManager {
       let users = serializedUsers ? JSON.parse(serializedUsers) : [];
       if (!Array.isArray(users)) users = [];
 
-      // Ensure default admin Ganika is always available
-      const hasAdmin = users.some(
-        u => (u.username || '').toLowerCase() === DEFAULT_ADMIN_USERNAME.toLowerCase()
+      // Ensure default admin 'Admin' is always available and has isAdmin: true
+      const adminIndex = users.findIndex(
+        u => (u.username || '').trim().toLowerCase() === DEFAULT_ADMIN_USERNAME.toLowerCase()
       );
-      if (!hasAdmin) {
+      if (adminIndex === -1) {
         users.unshift({
           username: DEFAULT_ADMIN_USERNAME,
           password: DEFAULT_ADMIN_PASSWORD,
-          fullName: 'Ganika',
-          role: 'Payroll Officer',
-          email: 'ganika@payroll.edu',
+          fullName: 'System Administrator',
+          role: 'Administrator (Full Access)',
+          isAdmin: true,
+          email: 'admin@payroll.edu',
           registeredAt: new Date().toISOString()
         });
-        localStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(users));
+      } else {
+        // Enforce updated credentials and admin privileges on Admin
+        users[adminIndex].username = DEFAULT_ADMIN_USERNAME;
+        users[adminIndex].password = DEFAULT_ADMIN_PASSWORD;
+        users[adminIndex].fullName = 'System Administrator';
+        users[adminIndex].isAdmin = true;
+        users[adminIndex].role = 'Administrator (Full Access)';
       }
 
+      // Ensure demo viewer is present
+      const hasViewer = users.some(
+        u => (u.username || '').trim().toLowerCase() === DEFAULT_VIEWER_USERNAME.toLowerCase()
+      );
+      if (!hasViewer) {
+        users.push({
+          username: DEFAULT_VIEWER_USERNAME,
+          password: DEFAULT_VIEWER_PASSWORD,
+          fullName: 'Demo Staff Viewer',
+          role: 'Staff Member (Read-Only)',
+          isAdmin: false,
+          email: 'viewer@payroll.edu',
+          registeredAt: new Date().toISOString()
+        });
+      }
+
+      // Guarantee ONLY 'Admin' has isAdmin = true; any and all other logins are strictly isAdmin = false (read-only reference)
+      users.forEach(u => {
+        if ((u.username || '').trim().toLowerCase() !== DEFAULT_ADMIN_USERNAME.toLowerCase()) {
+          u.isAdmin = false;
+        } else {
+          u.isAdmin = true;
+          u.password = DEFAULT_ADMIN_PASSWORD;
+        }
+      });
+
+      localStorage.setItem(REGISTERED_USERS_STORAGE_KEY, JSON.stringify(users));
       return users;
     } catch (parseError) {
       console.error('Failed to parse registered users:', parseError);
@@ -259,9 +393,19 @@ export class StorageManager {
         {
           username: DEFAULT_ADMIN_USERNAME,
           password: DEFAULT_ADMIN_PASSWORD,
-          fullName: 'Ganika',
-          role: 'Payroll Officer',
-          email: 'ganika@payroll.edu',
+          fullName: 'System Administrator',
+          role: 'Administrator (Full Access)',
+          isAdmin: true,
+          email: 'admin@payroll.edu',
+          registeredAt: new Date().toISOString()
+        },
+        {
+          username: DEFAULT_VIEWER_USERNAME,
+          password: DEFAULT_VIEWER_PASSWORD,
+          fullName: 'Demo Staff Viewer',
+          role: 'Staff Member (Read-Only)',
+          isAdmin: false,
+          email: 'viewer@payroll.edu',
           registeredAt: new Date().toISOString()
         }
       ];
@@ -270,6 +414,7 @@ export class StorageManager {
 
   /**
    * Registers a new user account.
+   * All user accounts created via registration have read-only permissions (isAdmin: false).
    * 
    * @param {Object} newUser 
    * @returns {{ success: boolean, user?: Object, message: string }}
@@ -313,7 +458,8 @@ export class StorageManager {
       username: cleanUsername,
       password: cleanPassword,
       fullName: formattedFullName,
-      role: newUser.role || 'Payroll Officer',
+      role: newUser.role || 'Staff Member (Read-Only)',
+      isAdmin: false, // Registered users are strictly read-only
       email: newUser.email ? newUser.email.trim() : '',
       registeredAt: new Date().toISOString()
     };
@@ -324,7 +470,7 @@ export class StorageManager {
     return {
       success: true,
       user: userRecord,
-      message: `Account '${cleanUsername}' created successfully! You can now sign in with this username.`
+      message: `Account '${cleanUsername}' created successfully with Read-Only and Report Download access.`
     };
   }
 

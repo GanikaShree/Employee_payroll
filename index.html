@@ -73,7 +73,7 @@
                   type="text" 
                   id="login-username" 
                   class="form-control" 
-                  placeholder="Enter username (e.g. Ganika or registered username)" 
+                  placeholder="Enter username (e.g. Admin or registered username)" 
                   required 
                   autocomplete="username"
                 >
@@ -108,7 +108,7 @@
 
             <div class="login-options-row">
               <label class="remember-label">
-                <input type="checkbox" id="remember-login-chk" checked>
+                <input type="checkbox" id="remember-login-chk">
                 <span>Keep me signed in</span>
               </label>
             </div>
@@ -122,21 +122,6 @@
             <span>New user?</span>
             <button type="button" id="switch-to-register-btn" class="link-btn">Create an account</button>
           </div>
-
-          <!-- Convenient Demo Credentials Card for Presentation -->
-          <div class="demo-credentials-card" id="demo-credentials-card">
-            <div class="demo-credentials-header">
-              <i class="fa-solid fa-key"></i>
-              <span>Login Credentials</span>
-            </div>
-            <p class="demo-credentials-text">
-              Admin: <strong>Ganika</strong> &bull; Password: <strong>Ganika@123</strong><br>
-              <span class="text-muted" style="font-size: 0.76rem;">(You can also sign in with any username created in the Register tab)</span>
-            </p>
-            <button id="fill-demo-credentials-btn" class="btn-demo-fill" type="button">
-              <i class="fa-solid fa-bolt"></i> Auto-fill Admin (Ganika)
-            </button>
-          </div>
         </div>
 
         <!-- ========================================== -->
@@ -144,6 +129,15 @@
         <!-- ========================================== -->
         <div id="auth-register-section" class="auth-section hidden">
           
+          <!-- Access Policy Notice -->
+          <div class="register-access-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+              <strong>User Access Policy:</strong>
+              <span>New accounts created here have <strong>Read &amp; Download Report</strong> access. Modifying, adding, and editing details is restricted to the Administrator.</span>
+            </div>
+          </div>
+
           <!-- Register Error Banner -->
           <div id="register-error-alert" class="login-alert hidden" role="alert">
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -199,10 +193,11 @@
                 Staff Role / Position <span class="required-star">*</span>
               </label>
               <select id="register-role" class="form-control form-select" required>
-                <option value="Payroll Officer" selected>Payroll Officer</option>
-                <option value="HR Manager">HR Manager</option>
-                <option value="Finance Analyst">Finance Analyst</option>
-                <option value="System Administrator">System Administrator</option>
+                <option value="Staff Member (Read-Only)" selected>Staff Member (Read-Only)</option>
+                <option value="General Employee (Read-Only)">General Employee (Read-Only)</option>
+                <option value="Finance Analyst (Read-Only)">Finance Analyst (Read-Only)</option>
+                <option value="HR Coordinator (Read-Only)">HR Coordinator (Read-Only)</option>
+                <option value="Payroll Auditor (Read-Only)">Payroll Auditor (Read-Only)</option>
               </select>
             </div>
 
@@ -292,8 +287,8 @@
             <i class="fa-solid fa-user-shield"></i>
           </div>
           <div class="user-info-text">
-            <span id="current-user-display" class="user-name-text">Ganika</span>
-            <span class="user-role-text">Payroll Officer</span>
+            <span id="current-user-display" class="user-name-text">Admin</span>
+            <span class="user-role-text">Administrator</span>
           </div>
           <button id="logout-btn" class="btn-logout" type="button" title="Sign Out of Portal">
             <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -310,6 +305,26 @@
     <!-- VIEW 1: PAYROLL DASHBOARD VIEW -->
     <section id="dashboard-view" class="view-section active">
       
+      <!-- Read-Only Mode Banner (Visible for Registered Non-Admin Users) -->
+      <div id="readonly-notice-banner" class="readonly-banner hidden">
+        <div class="readonly-banner-content">
+          <div class="readonly-icon-box">
+            <i class="fa-solid fa-lock"></i>
+          </div>
+          <div class="readonly-banner-text">
+            <h4 class="readonly-title"><i class="fa-solid fa-shield-halved"></i> Read-Only &amp; Report Download Mode</h4>
+            <p class="readonly-desc">
+              You are signed in as <strong id="readonly-username-badge">Staff User</strong> with view-only permissions. You can inspect payroll calculations and download reports. Adding, editing, and modifying employee details is restricted to the <strong>Administrator</strong>.
+            </p>
+          </div>
+        </div>
+        <div class="readonly-banner-actions">
+          <button id="banner-download-btn" class="btn btn-sm btn-primary" type="button" title="Download Full Payroll Report (CSV)">
+            <i class="fa-solid fa-file-arrow-down"></i> Download Report (CSV)
+          </button>
+        </div>
+      </div>
+
       <!-- Statistics Metric Cards -->
       <section class="stats-grid">
         <div class="stat-card">
@@ -402,11 +417,14 @@
 
         <!-- Table Management Utility Buttons -->
         <div class="utility-buttons-group">
-          <button id="reset-sample-data-btn" class="btn btn-secondary" type="button" title="Reload default sample records">
-            <i class="fa-solid fa-rotate-left"></i> Reset Sample Data
+          <button id="download-report-btn" class="btn btn-primary" type="button" title="Download complete payroll report as CSV">
+            <i class="fa-solid fa-file-arrow-down"></i> Download Report (CSV)
           </button>
           <button id="print-summary-btn" class="btn btn-secondary" type="button" title="Print payroll summary report">
             <i class="fa-solid fa-print"></i> Print Report
+          </button>
+          <button id="reset-sample-data-btn" class="btn btn-secondary" type="button" title="Reload default sample records">
+            <i class="fa-solid fa-rotate-left"></i> Reset Sample Data
           </button>
         </div>
       </section>
@@ -433,7 +451,7 @@
                 <th scope="col" class="text-right">Gross Pay</th>
                 <th scope="col" class="text-right">Deductions</th>
                 <th scope="col" class="text-right">Net Salary</th>
-                <th scope="col" class="text-center">Actions</th>
+                <th scope="col" class="text-center" id="table-action-header">Actions</th>
               </tr>
             </thead>
             <tbody id="payroll-table-body">

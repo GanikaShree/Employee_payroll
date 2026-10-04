@@ -31,12 +31,17 @@ It handles complete employee lifecycle compensation management:
 ---
 
 ## ✨ Key Features
-- **Secure Authentication & Login Portal**: Full-screen login screen requiring username & password. Features show/hide password toggle, "Remember me" persistence, error alerts, and a 1-click **"Auto-fill Demo Credentials"** button for presentations (`Ganika` / `Ganika@123`).
+- **Role-Based Access Control (RBAC) & Authentication**:
+  - **Administrator (`Admin` / `Admin@123`)**: Has full edit and modify privileges. Admin is the **only** user who can add new employees, edit employee compensation details, delete/remove records, and reset sample data.
+  - **Other Users / Staff Viewers (`viewer` / `viewer123` or newly registered accounts)**: Restricted to read-only viewing and reporting. They can inspect the live dashboard metrics, search and filter records, view detailed salary payslips, and **download/export full payroll reports (CSV)**. All modification controls (Add, Edit, Delete, Reset) are automatically hidden and protected by client-side security guards.
+  - **1-Click Auto-Fill Demo Credentials**: Buttons provided on the login page to immediately test both **Admin** and **Viewer** roles during presentations.
 - **Smart Employee Name Auto-Capitalization**: Automatically capitalizes the first letter of every word entered in the employee name field (e.g., `rahul verma` $\rightarrow$ `Rahul Verma`) both in real time and on submission.
-- **Employee CRUD Operations**: Add, Edit, and Delete employee records with full validation.
+- **Employee CRUD Operations (Admin Only)**: Add, Edit, and Delete employee records with full form validation and automatic sequential ID renumbering.
 - **Live Real-time Calculation Preview**: As you type basic salary, working days, or overtime hours in the form, the system immediately calculates and previews Basic Pay, Allowances, Deductions, and Net Salary before saving.
 - **Search & Filtering**: Real-time instant search by Employee ID or Name, alongside Department filter dropdown and salary/name sorting.
-- **Printable Salary Slip (Payslip) Generator**: Generates an official, bordered salary payslip with company header, dual-column earnings/deductions breakdown, net pay in numbers and words (e.g. *INR Eighty-One Thousand Nine Hundred Seventy-One Rupees Only*), verification stamp, and signatures.
+- **Downloadable & Printable Reports**:
+  - **Download Report (CSV)**: Export the complete company payroll register into a CSV spreadsheet.
+  - **Printable Salary Slip (Payslip)**: Generates an official, bordered salary payslip with company header, dual-column earnings/deductions breakdown, net pay in numbers and words (e.g. *INR Eighty-One Thousand Nine Hundred Seventy-One Rupees Only*), verification stamp, and signatures.
 - **Persistent Storage**: Utilizes browser LocalStorage with automatic sample data seeding. Changes persist across browser refreshes.
 - **Interactive Naming Convention Guide**: A dedicated in-app documentation tab showcasing the rules, code examples, and database mapping.
 - **Ready Database Integration**: Complete SQL DDL scripts (`database/schema.sql`), analytical queries (`database/sample_queries.sql`), and a Python SQLite initializer script (`database/init_db.py`).
@@ -251,3 +256,8 @@ python database/init_db.py
 
 #### Q4. How does the live calculation preview work?
 > **Answer:** "We attach `input` event listeners to the Basic Salary, Working Days, and Overtime input fields. Whenever the user modifies any number, `updateLiveCalculationPreview()` instantly invokes the pure `PayrollCalculator.calculatePayroll()` method and updates the preview text nodes in the DOM without submitting the form."
+
+#### Q5. How does Role-Based Access Control (RBAC) work in your application?
+> **Answer:** "The system implements two distinct access tiers:
+> 1. **Administrator (`Admin`)**: Has full edit and write privileges. The Admin can add new employees, edit salaries/working days, delete records with automatic ID resequencing, and reset sample data.
+> 2. **Other Users / Viewers (`viewer` or registered users)**: Have read-only privileges. They can view summary statistics, search and filter employees, generate payslips, and download/export full payroll CSV reports. All modification buttons and dialogs are completely hidden in the UI and protected by client-side JavaScript permission guards (`isCurrentUserAdmin()`)."

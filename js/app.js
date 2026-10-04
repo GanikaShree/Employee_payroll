@@ -16,13 +16,43 @@ import { Employee, PayrollCalculator } from './models.js';
 import { StorageManager } from './storage.js';
 import { 
   DEFAULT_ADMIN_USERNAME, 
-  DEFAULT_ADMIN_PASSWORD, 
+  DEFAULT_ADMIN_PASSWORD,
+  DEFAULT_VIEWER_USERNAME,
+  DEFAULT_VIEWER_PASSWORD, 
   AUTH_SESSION_STORAGE_KEY 
 } from './constants.js';
 
 // Global application state variables (camelCase)
 let currentEmployeeRecords = [];
 let pendingDeleteEmployeeId = null;
+
+/**
+ * Checks whether the currently logged-in session has Administrator editing privileges.
+ * ONLY the account 'Admin' has full editing access (Add, Edit, Delete, Reset).
+ * The 'Ganika' login and all other logins DO NOT have editing access (Strictly Read-Only Reference).
+ * 
+ * @returns {boolean} True if current user is Admin, false if Read-Only
+ */
+function isCurrentUserAdmin() {
+  const sessionUser = sessionStorage.getItem(AUTH_SESSION_STORAGE_KEY) || 
+                      localStorage.getItem(AUTH_SESSION_STORAGE_KEY);
+  if (!sessionUser) return false;
+
+  const cleanUsername = sessionUser.trim().toLowerCase();
+
+  // Explicit policy: Ganika login does NOT have editing access
+  if (cleanUsername === 'ganika') {
+    return false;
+  }
+
+  // ONLY 'Admin' has editing access
+  if (cleanUsername === DEFAULT_ADMIN_USERNAME.toLowerCase()) {
+    return true;
+  }
+
+  return false;
+}
+
 
 /**
  * Initializes the payroll application on DOM load.
@@ -159,8 +189,49 @@ function renderEmployeeTable(recordsToDisplay) {
 
   emptyStateContainer.classList.add('hidden');
 
+  const isAdmin = isCurrentUserAdmin();
+
   recordsToDisplay.forEach(employee => {
     const tableRow = document.createElement('tr');
+
+    let actionsCellHtml = `
+      <div class="action-buttons-cell">
+        <button 
+          type="button" 
+          class="action-btn action-btn-view" 
+          data-action="view-payslip" 
+          data-id="${escapeHtml(employee.employeeId)}"
+          title="Generate & View Salary Slip"
+        >
+          <i class="fa-solid fa-file-invoice"></i>
+        </button>
+    `;
+
+    // Only administrators have permissions to edit or delete employee records
+    if (isAdmin) {
+      actionsCellHtml += `
+        <button 
+          type="button" 
+          class="action-btn action-btn-edit" 
+          data-action="edit-employee" 
+          data-id="${escapeHtml(employee.employeeId)}"
+          title="Edit Employee Details"
+        >
+          <i class="fa-solid fa-pen-to-square"></i>
+        </button>
+        <button 
+          type="button" 
+          class="action-btn action-btn-delete" 
+          data-action="delete-employee" 
+          data-id="${escapeHtml(employee.employeeId)}"
+          title="Delete Employee"
+        >
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      `;
+    }
+
+    actionsCellHtml += `</div>`;
 
     tableRow.innerHTML = `
       <td>
@@ -192,35 +263,7 @@ function renderEmployeeTable(recordsToDisplay) {
         ${PayrollCalculator.formatCurrency(employee.payrollBreakdown.netSalary)}
       </td>
       <td class="text-center">
-        <div class="action-buttons-cell">
-          <button 
-            type="button" 
-            class="action-btn action-btn-view" 
-            data-action="view-payslip" 
-            data-id="${escapeHtml(employee.employeeId)}"
-            title="Generate & View Salary Slip"
-          >
-            <i class="fa-solid fa-file-invoice"></i>
-          </button>
-          <button 
-            type="button" 
-            class="action-btn action-btn-edit" 
-            data-action="edit-employee" 
-            data-id="${escapeHtml(employee.employeeId)}"
-            title="Edit Employee Details"
-          >
-            <i class="fa-solid fa-pen-to-square"></i>
-          </button>
-          <button 
-            type="button" 
-            class="action-btn action-btn-delete" 
-            data-action="delete-employee" 
-            data-id="${escapeHtml(employee.employeeId)}"
-            title="Delete Employee"
-          >
-            <i class="fa-solid fa-trash-can"></i>
-          </button>
-        </div>
+        ${actionsCellHtml}
       </td>
     `;
 
@@ -307,13 +350,80 @@ function checkAuthenticationState() {
     const userProfile = registeredUsers.find(
       u => u.username.toLowerCase() === sessionUser.toLowerCase()
     );
+    const isAdmin = isCurrentUserAdmin();
+    const displayName = userProfile ? (userProfile.fullName || userProfile.username) : sessionUser;
     
+    // 1. User profile display & role badge
     if (currentUserDisplay) {
-      currentUserDisplay.textContent = userProfile ? (userProfile.fullName || userProfile.username) : sessionUser;
+      currentUserDisplay.textContent = displayName;
     }
     const roleDisplay = document.querySelector('.user-role-text');
-    if (roleDisplay && userProfile) {
-      roleDisplay.textContent = userProfile.role || 'Payroll Officer';
+    const userAvatar = document.querySelector('.user-avatar-circle');
+    if (roleDisplay) {
+      if (isAdmin) {
+        roleDisplay.innerHTML = `<span class="badge-admin-pill"><i class="fa-solid fa-shield-halved"></i> Administrator (Full Access)</span>`;
+        if (userAvatar) {
+          userAvatar.innerHTML = `<i class="fa-solid fa-user-shield"></i>`;
+          userAvatar.title = 'Logged in as Administrator (Full Modify & Edit Privileges)';
+        }
+      } else {
+        const userRole = userProfile ? userProfile.role : 'Staff Member (Read-Only)';
+        roleDisplay.innerHTML = `<span class="badge-viewer-pill"><i class="fa-solid fa-eye"></i> ${escapeHtml(userRole)}</span>`;
+        if (userAvatar) {
+          userAvatar.innerHTML = `<i class="fa-solid fa-user"></i>`;
+          userAvatar.title = 'Logged in as Registered User (Read & Download Report Privileges)';
+        }
+      }
+    }
+
+    // 2. Control visibility of Add Employee header button (Admin only)
+    const addHeaderBtn = document.getElementById('add-employee-header-btn');
+    if (addHeaderBtn) {
+      if (isAdmin) {
+        addHeaderBtn.classList.remove('hidden');
+      } else {
+        addHeaderBtn.classList.add('hidden');
+      }
+    }
+
+    // 3. Control visibility of Reset Sample Data button (Admin only)
+    const resetBtn = document.getElementById('reset-sample-data-btn');
+    if (resetBtn) {
+      if (isAdmin) {
+        resetBtn.classList.remove('hidden');
+      } else {
+        resetBtn.classList.add('hidden');
+      }
+    }
+
+    // 4. Control visibility of Read-Only Notification Banner
+    const readonlyBanner = document.getElementById('readonly-notice-banner');
+    const readonlyBadge = document.getElementById('readonly-username-badge');
+    if (readonlyBanner) {
+      if (!isAdmin) {
+        readonlyBanner.classList.remove('hidden');
+        if (readonlyBadge) {
+          readonlyBadge.textContent = displayName;
+        }
+      } else {
+        readonlyBanner.classList.add('hidden');
+      }
+    }
+
+    // 5. Update Table Actions Column Header
+    const tableActionHeader = document.getElementById('table-action-header');
+    if (tableActionHeader) {
+      tableActionHeader.textContent = isAdmin ? 'Actions' : 'Report / Payslip';
+    }
+
+    // 6. Control visibility of empty state Add button (Admin only)
+    const emptyAddBtn = document.getElementById('empty-state-add-btn');
+    if (emptyAddBtn) {
+      if (isAdmin) {
+        emptyAddBtn.classList.remove('hidden');
+      } else {
+        emptyAddBtn.classList.add('hidden');
+      }
     }
     
     refreshEmployeeData();
@@ -590,7 +700,7 @@ function toggleRegisterPasswordVisibility() {
 }
 
 /**
- * Auto-fills demo credentials for presentations.
+ * Auto-fills demo credentials for presentations (Admin Admin).
  */
 function fillDemoCredentials() {
   const usernameInput = document.getElementById('login-username');
@@ -601,7 +711,24 @@ function fillDemoCredentials() {
   if (passwordInput) passwordInput.value = DEFAULT_ADMIN_PASSWORD;
   if (loginErrorAlert) loginErrorAlert.classList.add('hidden');
 
-  showNotificationToast(`Demo credentials filled (${DEFAULT_ADMIN_USERNAME} / ${DEFAULT_ADMIN_PASSWORD}).`, 'info');
+  showNotificationToast(`Demo admin credentials filled (${DEFAULT_ADMIN_USERNAME} / ${DEFAULT_ADMIN_PASSWORD}).`, 'info');
+  const submitBtn = document.getElementById('login-submit-btn');
+  if (submitBtn) submitBtn.focus();
+}
+
+/**
+ * Auto-fills demo viewer credentials for presentations (Read-Only).
+ */
+function fillDemoViewerCredentials() {
+  const usernameInput = document.getElementById('login-username');
+  const passwordInput = document.getElementById('login-password');
+  const loginErrorAlert = document.getElementById('login-error-alert');
+
+  if (usernameInput) usernameInput.value = DEFAULT_VIEWER_USERNAME;
+  if (passwordInput) passwordInput.value = DEFAULT_VIEWER_PASSWORD;
+  if (loginErrorAlert) loginErrorAlert.classList.add('hidden');
+
+  showNotificationToast(`Demo viewer credentials filled (${DEFAULT_VIEWER_USERNAME} / ${DEFAULT_VIEWER_PASSWORD}).`, 'info');
   const submitBtn = document.getElementById('login-submit-btn');
   if (submitBtn) submitBtn.focus();
 }
@@ -633,8 +760,15 @@ function getSuggestedNextEmployeeId(employeeList) {
 
 /**
  * Opens the Add Employee Modal with a clean blank form.
+ * Restricted to Administrator only.
  */
 function openAddEmployeeModal() {
+  // Permission Guard: Only Administrator can add employee records
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can add new employee records.', 'error');
+    return;
+  }
+
   const modalElement = document.getElementById('employee-modal');
   const modalFormTitle = document.getElementById('modal-form-title');
   const modalIcon = document.getElementById('modal-icon');
@@ -668,6 +802,12 @@ function openAddEmployeeModal() {
  * @param {string} employeeId 
  */
 function openEditEmployeeModal(employeeId) {
+  // Permission Guard: Only Administrator can edit employee records
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can edit employee details.', 'error');
+    return;
+  }
+
   const employee = StorageManager.getEmployeeById(employeeId);
   if (!employee) {
     showNotificationToast(`Employee ${employeeId} not found.`, 'error');
@@ -704,6 +844,12 @@ function openEditEmployeeModal(employeeId) {
  */
 function handleEmployeeFormSubmit(event) {
   event.preventDefault();
+
+  // Permission Guard: Only Administrator can modify employee records
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can save or modify employee details.', 'error');
+    return;
+  }
 
   clearFormErrors();
 
@@ -840,7 +986,18 @@ function openPayslipModal(employeeId) {
  * 
  * @param {string} employeeId 
  */
+/**
+ * Opens delete confirmation dialog.
+ * 
+ * @param {string} employeeId 
+ */
 function openDeleteConfirmModal(employeeId) {
+  // Permission Guard: Only Administrator can delete employee records
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can delete employee records.', 'error');
+    return;
+  }
+
   const employee = StorageManager.getEmployeeById(employeeId);
   if (!employee) return;
 
@@ -855,6 +1012,12 @@ function openDeleteConfirmModal(employeeId) {
  * Executes the confirmed delete operation.
  */
 function executeEmployeeDeletion() {
+  // Permission Guard: Only Administrator can delete employee records
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can delete employee records.', 'error');
+    return;
+  }
+
   if (!pendingDeleteEmployeeId) return;
 
   const result = StorageManager.deleteEmployee(pendingDeleteEmployeeId);
@@ -872,6 +1035,12 @@ function executeEmployeeDeletion() {
  * Resets storage to original sample records and re-renders.
  */
 function handleResetSampleData() {
+  // Permission Guard: Only Administrator can reset data
+  if (!isCurrentUserAdmin()) {
+    showNotificationToast('Permission Denied: Only Administrator can reset sample records.', 'error');
+    return;
+  }
+
   const confirmReset = window.confirm('Reset all employee records to initial sample data? Any newly added records will be overwritten.');
   if (confirmReset) {
     StorageManager.resetToSampleData();
@@ -879,6 +1048,123 @@ function handleResetSampleData() {
     renderDashboard();
     showNotificationToast('Reset to initial sample employee records.', 'info');
   }
+}
+
+/**
+ * Generates and downloads the complete payroll report as a formatted CSV spreadsheet.
+ * Accessible to both Administrator and Read-Only registered users.
+ */
+function downloadPayrollReportCSV() {
+  const records = currentEmployeeRecords;
+  if (!records || records.length === 0) {
+    showNotificationToast('No employee records available to export.', 'warning');
+    return;
+  }
+
+  const currentDateStr = new Date().toLocaleDateString('en-IN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const headers = [
+    'Employee ID',
+    'Employee Name',
+    'Department',
+    'Designation',
+    'Basic Salary (INR)',
+    'Working Days',
+    'Overtime Hours',
+    'Basic Pay (INR)',
+    'Overtime Pay (INR)',
+    'HRA (20%) (INR)',
+    'DA (10%) (INR)',
+    'Conveyance Allowance (INR)',
+    'Medical Allowance (INR)',
+    'Total Allowances (INR)',
+    'Gross Salary (INR)',
+    'PF Deduction (12%) (INR)',
+    'Professional Tax (INR)',
+    'Income Tax / TDS (INR)',
+    'Total Deductions (INR)',
+    'Net Payable Salary (INR)'
+  ];
+
+  const rows = records.map(emp => {
+    const bd = emp.payrollBreakdown;
+    return [
+      `"${emp.employeeId}"`,
+      `"${emp.employeeName}"`,
+      `"${emp.department}"`,
+      `"${emp.designation}"`,
+      emp.basicSalary.toFixed(2),
+      emp.workingDays,
+      emp.overtimeHours,
+      bd.basicPay.toFixed(2),
+      bd.overtimePay.toFixed(2),
+      bd.hraAmount.toFixed(2),
+      bd.daAmount.toFixed(2),
+      bd.conveyanceAmount.toFixed(2),
+      bd.medicalAmount.toFixed(2),
+      bd.totalAllowances.toFixed(2),
+      bd.grossSalary.toFixed(2),
+      bd.pfDeduction.toFixed(2),
+      bd.professionalTax.toFixed(2),
+      bd.incomeTax.toFixed(2),
+      bd.totalDeductions.toFixed(2),
+      bd.netSalary.toFixed(2)
+    ].join(',');
+  });
+
+  const totalGross = records.reduce((sum, r) => sum + r.payrollBreakdown.grossSalary, 0);
+  const totalDeductions = records.reduce((sum, r) => sum + r.payrollBreakdown.totalDeductions, 0);
+  const totalNet = records.reduce((sum, r) => sum + r.payrollBreakdown.netSalary, 0);
+
+  const summaryRow = [
+    '"TOTAL"',
+    `"Total Employees: ${records.length}"`,
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    '""',
+    totalGross.toFixed(2),
+    '""',
+    '""',
+    '""',
+    totalDeductions.toFixed(2),
+    totalNet.toFixed(2)
+  ].join(',');
+
+  const csvContent = [
+    `"EMPLOYEE PAYROLL SUMMARY REPORT - ACADEMIC TECH ENTERPRISES PVT. LTD."`,
+    `"Report Date: ${currentDateStr}"`,
+    `"Exported By: ${sessionStorage.getItem(AUTH_SESSION_STORAGE_KEY) || localStorage.getItem(AUTH_SESSION_STORAGE_KEY) || 'User'}"`,
+    '',
+    headers.join(','),
+    ...rows,
+    '',
+    summaryRow
+  ].join('\r\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const downloadUrl = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', downloadUrl);
+  link.setAttribute('download', `Payroll_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(downloadUrl);
+
+  showNotificationToast('Payroll report downloaded successfully (CSV).', 'success');
 }
 
 /**
@@ -934,6 +1220,26 @@ function setupEventListeners() {
     fillDemoBtn.addEventListener('click', fillDemoCredentials);
   }
 
+  const fillDemoViewerBtn = document.getElementById('fill-demo-viewer-btn');
+  if (fillDemoViewerBtn) {
+    fillDemoViewerBtn.addEventListener('click', fillDemoViewerCredentials);
+  }
+
+  const clearLoginHistoryBtn = document.getElementById('clear-login-history-btn');
+  if (clearLoginHistoryBtn) {
+    clearLoginHistoryBtn.addEventListener('click', () => {
+      const result = StorageManager.clearAllLoginHistory();
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) loginForm.reset();
+      const registerForm = document.getElementById('register-form');
+      if (registerForm) registerForm.reset();
+      const loginErrorAlert = document.getElementById('login-error-alert');
+      if (loginErrorAlert) loginErrorAlert.classList.add('hidden');
+      showNotificationToast(result.message, 'success');
+      checkAuthenticationState();
+    });
+  }
+
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', handleLogout);
@@ -959,14 +1265,23 @@ function setupEventListeners() {
     });
   }
 
-  // Header Add Employee Button
-  document.getElementById('add-employee-header-btn').addEventListener('click', openAddEmployeeModal);
+  // Header Add Employee Button (Admin only)
+  const addHeaderBtn = document.getElementById('add-employee-header-btn');
+  if (addHeaderBtn) {
+    addHeaderBtn.addEventListener('click', openAddEmployeeModal);
+  }
   
-  // Empty State Add Employee Button
-  document.getElementById('empty-state-add-btn').addEventListener('click', openAddEmployeeModal);
+  // Empty State Add Employee Button (Admin only)
+  const emptyStateAddBtn = document.getElementById('empty-state-add-btn');
+  if (emptyStateAddBtn) {
+    emptyStateAddBtn.addEventListener('click', openAddEmployeeModal);
+  }
 
-  // Form Submit
-  document.getElementById('employee-form').addEventListener('submit', handleEmployeeFormSubmit);
+  // Form Submit (Admin only)
+  const employeeForm = document.getElementById('employee-form');
+  if (employeeForm) {
+    employeeForm.addEventListener('submit', handleEmployeeFormSubmit);
+  }
 
   // Live Preview Listeners
   ['input-basic-salary', 'input-working-days', 'input-overtime-hours'].forEach(elementId => {
@@ -990,6 +1305,17 @@ function setupEventListeners() {
   // Print buttons
   document.getElementById('print-payslip-btn').addEventListener('click', () => window.print());
   document.getElementById('print-summary-btn').addEventListener('click', () => window.print());
+
+  // Download Report (CSV) buttons - Accessible by both Admin and Read-Only users
+  const downloadReportBtn = document.getElementById('download-report-btn');
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener('click', downloadPayrollReportCSV);
+  }
+
+  const bannerDownloadBtn = document.getElementById('banner-download-btn');
+  if (bannerDownloadBtn) {
+    bannerDownloadBtn.addEventListener('click', downloadPayrollReportCSV);
+  }
 
   // Search input with debounce / immediate filter
   const searchInput = document.getElementById('search-input');

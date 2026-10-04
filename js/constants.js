@@ -30,7 +30,10 @@ export const APP_CURRENCY_SYMBOL = '₹';
 export const APP_DATE_LOCALE = 'en-IN';
 
 // Authentication constants
-export const DEFAULT_ADMIN_USERNAME = 'Ganika';
-export const DEFAULT_ADMIN_PASSWORD = 'Ganika@123';
-export const AUTH_SESSION_STORAGE_KEY = 'employee_payroll_auth_session_v1';
-export const REGISTERED_USERS_STORAGE_KEY = 'employee_payroll_registered_users_v1';
+export const DEFAULT_ADMIN_USERNAME = 'Admin';
+export const DEFAULT_ADMIN_PASSWORD = 'Admin@123';
+export const DEFAULT_VIEWER_USERNAME = 'viewer';
+export const DEFAULT_VIEWER_PASSWORD = 'viewer123';
+export const AUTH_SESSION_STORAGE_KEY = 'employee_payroll_auth_session_v3';
+export const REGISTERED_USERS_STORAGE_KEY = 'employee_payroll_registered_users_v3';
+

@@ -1932,3 +1932,190 @@ button {
   gap: 0.35rem;
   margin-top: 0.15rem;
 }
+
+/* ==========================================================================
+   18. ROLE-BASED ACCESS CONTROL (RBAC) STYLING
+   ========================================================================== */
+.readonly-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid var(--primary-600);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.readonly-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex: 1;
+  min-width: 260px;
+}
+
+.readonly-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  color: var(--primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.readonly-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.readonly-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e40af;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.readonly-desc {
+  font-size: 0.82rem;
+  color: #1e3a8a;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.readonly-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Register Access Policy Note */
+.register-access-note {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8rem;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.register-access-note i {
+  color: var(--primary-600);
+  font-size: 1rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+/* Demo Credentials Card Enhancements */
+.demo-roles-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.65rem 0;
+  text-align: left;
+}
+
+.demo-role-item {
+  background-color: var(--surface-white);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.demo-role-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.demo-badge-admin {
+  color: var(--primary-700);
+}
+
+.demo-badge-viewer {
+  color: var(--neutral-700);
+}
+
+.demo-role-desc {
+  font-size: 0.76rem;
+  color: var(--neutral-600);
+}
+
+.demo-action-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.demo-action-buttons .btn-demo-fill {
+  flex: 1;
+  min-width: 140px;
+}
+
+.btn-demo-fill-viewer {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.btn-demo-fill-viewer:hover {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.btn-demo-fill-clear {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
+}
+
+.btn-demo-fill-clear:hover {
+  background-color: #fee2e2 !important;
+  color: #991b1b !important;
+}
+
+/* Role Badges in Header */
+.badge-admin-pill {
+  background-color: rgba(79, 70, 229, 0.15);
+  color: var(--primary-700);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
+.badge-viewer-pill {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+}
+
